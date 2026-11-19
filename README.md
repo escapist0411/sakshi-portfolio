@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sakshi Shevkari — Portfolio
 
-## Getting Started
+A dark, typography-led single-page portfolio. **Current phase: Phase 1 — Foundation + Design System.**
 
-First, run the development server:
+## Development
 
-```bash
+Node.js 20.9+ and npm are required.
+
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run typecheck
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The development preview is at http://localhost:3000. `npm start` serves a completed production build. Google font files are fetched during build by `next/font`, then self-hosted by Next.js.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack and architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js App Router, TypeScript, Tailwind CSS, Lucide React. GSAP (including its ScrollTrigger module) and Lenis are installed for later phases and are not initialized or shipped through page imports in Phase 1. No Three.js.
 
-## Learn More
+- `src/app/`: layout, metadata, page composition, global design tokens and responsive styles.
+- `src/data/portfolio.ts`: editable identity, education, experience, skills, research, projects, learning, and contact content.
+- `src/components/`: Navbar, Hero, About, Services, Projects, Play, Contact, and CopyEmail.
+- Only Navbar and CopyEmail are client components. Navigation uses native anchors, a mobile disclosure, Escape dismissal, and section observation. Clipboard feedback includes an accessible failure state.
+- `.chrome-text`, `.glass`, `.display`, `.technical`, `.eyebrow`, `.pill`, and `.button` form the shared visual system.
+- Six semantic sections: `home`, `about`, `services`, `projects`, `play`, `contact`.
 
-To learn more about Next.js, take a look at the following resources:
+## Asset handoff
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The full-size `data-portrait-slot` in Hero is reserved for the responsive portrait canvas. Its stacking order places the background behind the portrait, then PORTFOLIO, identity, and foreground elements. Supply Sakshi’s approved portrait in Phase 2. The source background must be suppressed and the person isolated before future particle sampling.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Project media paths are defined in portfolio data and documented in `public/images/projects/README.md`. Screenshots are intentionally not loaded until supplied. No stock photography or fabricated screenshots are used. Personal GitHub and LinkedIn URLs are still required; their controls are explicitly disabled. Only the supplied iris repository is linked.
 
-## Deploy on Vercel
+## Controlled phases
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Foundation + Design System — implemented.** Static layout, responsive typography, placeholders, navigation, clipboard, accessibility and reduced-motion baseline.
+2. Preloader + Particle Portrait Hero.
+3. About + Stack + Scroll Animation (independent stack rows are prepared).
+4. Services + Projects Animation.
+5. Interactive Breakout Game (the arcade is currently only a static preview).
+6. Contact + Cursor + Final Polish.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Advanced animation, portrait particles, the interactive game, GSAP/Lenis initialization, velocity distortion, and custom cursor are deliberately deferred. Future modules such as ParticleFace, Preloader, CustomCursor, animations, and particle helpers should be added when implemented; no empty scaffolding is required.
