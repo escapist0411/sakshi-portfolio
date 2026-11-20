@@ -26,6 +26,11 @@ function smooth(start: number, end: number, value: number) {
   return fraction * fraction * (3 - 2 * fraction);
 }
 
+function eyeRegion(column: number, row: number, centerX: number, centerY: number, radiusX: number) {
+  const distance = ((column - centerX) / radiusX) ** 2 + ((row - centerY) / 18) ** 2;
+  return Math.max(0, 1 - distance) ** 2;
+}
+
 function pack(candidates: Candidate[], count: number): Points {
   const selected = candidates.slice(0, count);
   return {
@@ -68,34 +73,48 @@ async function readPortrait(src: string) {
   }
 
   const random = randomSource(713);
+  const shadowRandom = randomSource(714);
   const candidates: Candidate[] = [];
   const neighborhood = 4;
+  const vertical = neighborhood * width;
   for (let row = neighborhood; row < height - neighborhood; row++) {
     for (let column = neighborhood; column < width - neighborhood; column++) {
       const index = row * width + column;
       const offset = index * 4;
       const light = luma[index];
-      // The supplied JPEG has a black matte. Reject matte and JPEG fringe while keeping dark hair.
-      if (data[offset + 3] < 80 || light < 0.035 || Math.max(data[offset], data[offset + 1], data[offset + 2]) < 15) continue;
+      if (data[offset + 3] < 80) continue;
+      const matte = light < 0.035 || Math.max(data[offset], data[offset + 1], data[offset + 2]) < 15;
+      // Measured in the 320 × 292 offscreen sample, in viewer coordinates. The wider left
+      // region also covers the shaded outer corner and the transition into the nose bridge.
+      const leftEye = eyeRegion(column, row, 133, 89, 19);
+      const rightEye = eyeRegion(column, row, 169, 86, 18);
+      const eye = Math.max(leftEye, rightEye);
+      if (matte && (eye < 0.25 || light < 0.015)) continue;
       const x = column / width;
       const y = row / height;
       // Ellipses measured on Sakshi's crop: face, then hair and upper shoulders.
       const face = Math.exp(-(((x - 0.505) / 0.126) ** 2 + ((y - 0.335) / 0.202) ** 2));
       const head = Math.exp(-(((x - 0.52) / 0.235) ** 2 + ((y - 0.27) / 0.33) ** 2));
       const edge = Math.min(1, 2.5 * (Math.abs(luma[index + 1] - luma[index - 1]) + Math.abs(luma[index + width] - luma[index - width])));
-      const vertical = neighborhood * width;
       const surrounding = (luma[index - neighborhood] + luma[index + neighborhood] + luma[index - vertical] + luma[index + vertical]
         + luma[index - vertical - neighborhood] + luma[index - vertical + neighborhood]
         + luma[index + vertical - neighborhood] + luma[index + vertical + neighborhood]) / 8;
       const contrast = light - surrounding;
-      const weight = 0.25 + 3.9 * face + 0.83 * head + 1.0 * edge + 3.2 * face * Math.abs(contrast);
-      const rank = -Math.log(random()) / weight;
+      const detail = Math.max(edge, 2.6 * Math.abs(contrast));
+      // Allow very dark ocular boundaries only when the surrounding pixels are part of the face.
+      if (matte && (surrounding < 0.16 || detail < 0.32)) continue;
+      const eyeWeight = (5.1 * leftEye + 2.5 * rightEye) * (0.48 + 1.12 * detail);
+      const weight = 0.25 + 3.9 * face + 0.83 * head + edge + 3.2 * face * Math.abs(contrast) + eyeWeight;
+      const rank = -Math.log(matte ? shadowRandom() : random()) / weight;
       // Preserve dark features inside the brighter skin instead of brightening both sides of every edge.
       const faceTone = 0.05 + 0.87 * smooth(0.19, 0.78, light + 1.18 * contrast);
       const silhouetteTone = 0.05 + 0.83 * light ** 0.86 + edge * 0.15;
       const tonalBlend = smooth(0.08, 0.72, face);
-      const shade = Math.min(1, (silhouetteTone + (faceTone - silhouetteTone) * tonalBlend) * (1 + 0.15 * face));
-      candidates.push({ x, y, shade, face, rank, mobileRank: rank / (0.17 + 1.15 * face + 0.63 * head) });
+      const baseShade = (silhouetteTone + (faceTone - silhouetteTone) * tonalBlend) * (1 + 0.15 * face);
+      const eyeBoundary = eye * smooth(0.12, 0.72, detail);
+      const shade = Math.min(1, Math.max(baseShade, 0.05 + 0.24 * eyeBoundary) * (1 + 0.12 * eyeBoundary));
+      const mobileWeight = 0.17 + 1.15 * face + 0.63 * head + 0.23 * leftEye + 0.05 * rightEye;
+      candidates.push({ x, y, shade, face, rank, mobileRank: rank / mobileWeight });
     }
   }
   if (candidates.length < PARTICLE_COUNTS.desktop) throw new Error("Portrait has too little visible detail");
