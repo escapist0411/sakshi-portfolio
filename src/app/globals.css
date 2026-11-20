@@ -142,11 +142,14 @@ html[data-intro="running"], html[data-intro="running"] body { overflow: hidden; 
   .portrait-frame { left: 64%; width: min(60vw, 69svh); }
 }
 @media (max-width: 760px) {
-  .hero { min-height: max(100svh, 640px); }
-  .portrait-frame { top: 97px; left: 50%; width: min(132vw, 560px); }
+  .hero { min-height: max(100svh, 640px); justify-content: flex-start; }
+  .portrait-frame { top: 92px; left: 50%; width: min(148vw, 660px); }
   .portrait-fallback { mask-image: linear-gradient(#000 53%, transparent 88%); }
-  .hero-title { margin-block: clamp(174px, 59vw, 278px) 12px; }
-  .hero-identity { padding-block: 26px 46px; }
+  .hero-title-motion { margin-top: clamp(206px, 65vw, 286px); }
+  .hero-title { margin: 0 -7px; }
+  .hero-identity { padding-block: 32px 30px; }
+  .hero-identity .technical { margin-bottom: 10px; }
+  .hero-bottom { margin-top: auto; }
   .project-entry, .project-entry:nth-child(even) { grid-template-columns: minmax(0, 1fr); }
   .project-media { width: 100%; }
 }

@@ -13,6 +13,8 @@ type Points = {
 };
 
 type Candidate = { x: number; y: number; shade: number; face: number; rank: number; mobileRank: number };
+type FacialTones = { image: HTMLCanvasElement; x: number; y: number; width: number; height: number };
+type PortraitSamples = { desktop: Points; mobile: Points; facialTones: FacialTones };
 
 function randomSource(seed: number) {
   return () => {
@@ -41,7 +43,7 @@ function pack(candidates: Candidate[], count: number): Points {
   };
 }
 
-const processed = new Map<string, Promise<{ desktop: Points; mobile: Points }>>();
+const processed = new Map<string, Promise<PortraitSamples>>();
 
 export function samplePortrait(src: string) {
   const cached = processed.get(src);
@@ -54,7 +56,37 @@ export function samplePortrait(src: string) {
   return pending;
 }
 
-async function readPortrait(src: string) {
+function bakeFacialTones(buffer: HTMLCanvasElement, context: CanvasRenderingContext2D, luma: Float32Array): FacialTones {
+  const { width, height } = buffer;
+  const left = Math.floor(width * 0.32);
+  const top = Math.floor(height * 0.13);
+  const patchWidth = Math.ceil(width * 0.39);
+  const patchHeight = Math.ceil(height * 0.47);
+  const patch = context.createImageData(patchWidth, patchHeight);
+
+  for (let row = 0; row < patchHeight; row++) {
+    for (let column = 0; column < patchWidth; column++) {
+      const x = (left + column) / width;
+      const y = (top + row) / height;
+      const falloff = 1 - ((x - 0.505) / 0.18) ** 2 - ((y - 0.35) / 0.23) ** 2;
+      const mask = smooth(0, 0.78, falloff);
+      const light = luma[(top + row) * width + left + column];
+      const offset = (row * patchWidth + column) * 4;
+      patch.data[offset] = 206;
+      patch.data[offset + 1] = 217;
+      patch.data[offset + 2] = 235;
+      patch.data[offset + 3] = Math.round(255 * mask * smooth(0.11, 0.83, light));
+    }
+  }
+
+  // Reuse the sampling canvas as a small, feathered tonal layer for the formed face.
+  buffer.width = patchWidth;
+  buffer.height = patchHeight;
+  context.putImageData(patch, 0, 0);
+  return { image: buffer, x: left / width, y: top / height, width: patchWidth / width, height: patchHeight / height };
+}
+
+async function readPortrait(src: string): Promise<PortraitSamples> {
   const image = new Image();
   image.src = src;
   await image.decode();
@@ -121,6 +153,7 @@ async function readPortrait(src: string) {
   return {
     desktop: pack(candidates.sort((a, b) => a.rank - b.rank), PARTICLE_COUNTS.desktop),
     mobile: pack(candidates.sort((a, b) => a.mobileRank - b.mobileRank), PARTICLE_COUNTS.mobile),
+    facialTones: bakeFacialTones(buffer, context, luma),
   };
 }
 
@@ -138,7 +171,7 @@ type PortraitSize = {
 export function createPortraitRenderer(
   canvas: HTMLCanvasElement,
   context: CanvasRenderingContext2D,
-  samples: Awaited<ReturnType<typeof samplePortrait>>,
+  samples: PortraitSamples,
 ) {
   const array = () => new Float32Array(PARTICLE_COUNTS.desktop);
   const homeX = array(), homeY = array(), x = array(), y = array();
@@ -161,6 +194,8 @@ export function createPortraitRenderer(
   let mode: "waiting" | "forming" | "settled" = "waiting";
   let clock = 0, formation = 0, scatter = 0, displayedScatter = 0;
   let pointerX = -1000, pointerY = -1000;
+  const tones = samples.facialTones;
+  let toneLeft = 0, toneTop = 0, toneWidth = 0, toneHeight = 0;
 
   function resetPositions() {
     for (let index = 0; index < count; index++) {
@@ -178,6 +213,10 @@ export function createPortraitRenderer(
     canvas.width = Math.max(1, Math.round(width * bounds.dpr));
     canvas.height = Math.max(1, Math.round(height * bounds.dpr));
     context.setTransform(bounds.dpr, 0, 0, bounds.dpr, 0, 0);
+    toneLeft = bounds.left + tones.x * bounds.portraitWidth;
+    toneTop = bounds.top + tones.y * bounds.portraitHeight;
+    toneWidth = tones.width * bounds.portraitWidth;
+    toneHeight = tones.height * bounds.portraitHeight;
     for (let index = 0; index < count; index++) {
       const pointY = points.y[index];
       homeX[index] = bounds.left + points.x[index] * bounds.portraitWidth;
@@ -206,6 +245,13 @@ export function createPortraitRenderer(
     const distance = still ? 0 : smooth(0, 1, displayedScatter);
     const opacity = 1 - smooth(0.15, 1, displayedScatter);
     const wavePosition = (clock % 5.2 - 3.7) * 1.23;
+    const toneReveal = forming ? smooth(0.7, 1.65, formation) : 1;
+    const toneExit = still ? 1 : 1 - smooth(0.025, 0.37, displayedScatter);
+    const toneOpacity = (screen === "mobile" ? 0.56 : 0.4) * toneReveal * toneExit;
+    if (toneOpacity > 0.005) {
+      context.globalAlpha = toneOpacity;
+      context.drawImage(tones.image, toneLeft, toneTop, toneWidth, toneHeight);
+    }
 
     context.fillStyle = "#dfe7f2";
     for (let index = 0; index < count; index++) {
