@@ -5,6 +5,7 @@ import Services from "@/components/Services";
 import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
 import Preloader from "@/components/Preloader";
+import SectionMotion from "@/components/SectionMotion";
 import { portfolio } from "@/data/portfolio";
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
           <Projects />
           <Contact />
         </main>
+        <SectionMotion />
       </div>
     </>
   );

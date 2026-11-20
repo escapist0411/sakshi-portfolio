@@ -27,8 +27,8 @@ export function setupSmoothScroll() {
     const focusTarget = target.querySelector<HTMLElement>("h1,h2") ?? target;
     if (!focusTarget.hasAttribute("tabindex")) focusTarget.tabIndex = -1;
     focusTarget.focus({ preventScroll: true });
-    const offset = hash === "#home" ? 0 : -parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
-    lenis.scrollTo(hash === "#home" ? 0 : target, { offset });
+    // Lenis already reads the target's scroll margin and the document's scroll padding.
+    lenis.scrollTo(hash === "#home" ? 0 : target);
   }
 
   gsap.ticker.add(tick);
