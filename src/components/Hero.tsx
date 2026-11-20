@@ -12,7 +12,7 @@ export default function Hero() {
         <span>{portfolio.location} <span className="small-cross">+</span></span>
       </div>
       <div className="hero-title-motion">
-        <h1 id="hero-title" className="hero-title chrome-text" tabIndex={-1}>PORTFOLIO</h1>
+        <h1 id="hero-title" className="hero-title chrome-text" aria-label={`Portfolio of ${portfolio.name}, ${portfolio.title}`} tabIndex={-1}>PORTFOLIO</h1>
       </div>
       <div className="hero-identity">
         <p className="technical">{portfolio.name}</p>

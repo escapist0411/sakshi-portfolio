@@ -1,33 +1,30 @@
 # Sakshi Shevkari — Portfolio
 
-A dark, typography-led single-page portfolio. Current phase is **Phase 2 — Cinematic Intro and Particle Portrait**.
+The single-page portfolio of Sakshi Shevkari, AI & Software Engineer. It covers machine learning research, full-stack development, and deployment experience.
 
 ## Development
 
-Node.js 20.9+ and npm are required.
+Use Node.js 20.9 or newer.
 
 ```sh
-npm install
+npm ci
 npm run dev
 npm run lint
 npm run typecheck
 npm run build
 ```
 
-The default development URL is http://localhost:3000. `npm start` serves a completed production build. Next.js fetches the Google fonts at build time and self-hosts them.
+The development server usually starts at `http://localhost:3000`. Run `npm start` after a successful build to preview the production bundle. Next.js fetches the Google fonts at build time and serves them locally.
 
-## Architecture
+## Stack and structure
 
-- `src/app/` contains the layout, page composition, and CSS design system.
-- `src/data/portfolio.ts` holds editable identity, education, experience, skills, projects, and contact content.
-- `src/components/` contains the five sections and the client controls for navigation, email copy, the intro, and the portrait.
-- `src/lib/animations.ts` runs Lenis on the shared GSAP ticker and forwards scroll updates to ScrollTrigger. `src/lib/particles.ts` samples the portrait once and renders it on a single Canvas with typed arrays.
-- `.chrome-text`, `.glass`, `.display`, `.technical`, `.eyebrow`, `.pill`, and `.button` are shared styles.
+Next.js App Router, TypeScript, Tailwind CSS, GSAP and ScrollTrigger, Lenis, and HTML Canvas.
 
-The intro runs on a normal page load at the top. Skip Intro and reduced-motion preferences show the final hero directly. Deep links go straight to their section. ScrollTrigger scatters and reforms the particles as the hero leaves and reenters the viewport. The canvas pauses when the hero or tab is hidden. Dispatch `portfolio:reform-particles` to request a reform from another component.
+- `src/app/` holds the page, metadata, monogram icon, and global styles. `src/data/portfolio.ts` is the source for Sakshi’s biography, skills, projects, experience, and contact details.
+- The skippable cinematic intro leads into a Canvas particle portrait. Face-weighted sampling preserves the portrait on mobile, and rendering pauses when the hero is offscreen. Lenis uses the shared GSAP ticker for smooth navigation, with scroll progress and active section tracking.
+- About and Services reveal as they enter the viewport. The four technology marquees can be paused by keyboard and pause offscreen. The four-project showcase pairs the supplied Iris and ERP visuals with CSS workflow diagrams for Bug Lifespan and Restaurant Reservation.
+- Contact includes an email link, copy feedback and fallback, and Back to Top. Magnetic movement is limited to the email CTA and Back to Top on desktop with a fine pointer. Reduced-motion preferences keep the portrait, marquees, section reveals, and parallax still.
 
-## Assets and remaining phases
+## Optional updates
 
-Phase 2 uses the supplied `sakshi-portfolio-portrait.jpg`, `iris-liveness.jpg`, and `erp-deployment.png` from `public/images/`. The Bug Lifespan and Restaurant Reservation media slots and personal GitHub and LinkedIn URLs still await approved inputs.
-
-Phase 3 will cover About, Stack, and section motion. Services and Projects choreography and final contact polish remain future work.
+Add personal LinkedIn or other social links once Sakshi supplies them. Approved screenshots can replace the CSS workflow diagrams. A dedicated Open Graph image can supplement the current text share metadata.
