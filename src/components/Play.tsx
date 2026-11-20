@@ -1,3 +1,0 @@
-export default function Play() {
-  return <section id="play" className="section play"><span className="pill">INTERACTIVE ARCADE SHOWCASE</span><h2 className="display">BREAK IT<br /><em>IF YOU CAN.</em></h2><p className="play-help">Move your mouse or use arrow keys to control the paddle.</p><div className="arcade" aria-label="Static arcade preview. Interactive game coming in Phase 5."><div className="arcade-top technical"><span>DESTRUCTIBLE 5×7 ASCII BITMAP FONT MATRIX</span><span className="arcade-lives">BALLS <i /><i /><i /></span></div><div className="arcade-screen"><div className="dot-matrix">AI THAT<br />SHIPS</div><p className="technical">STATIC PREVIEW / GAME COMING IN PHASE 5</p><div className="static-paddle" aria-hidden="true" /></div></div></section>;
-}

@@ -1,6 +1,6 @@
 # Sakshi Shevkari — Portfolio
 
-A dark, typography-led single-page portfolio. **Current phase: Phase 1 — Foundation + Design System.**
+A dark, typography-led single-page portfolio. Current phase is **Phase 2 — Cinematic Intro and Particle Portrait**.
 
 ## Development
 
@@ -14,32 +14,20 @@ npm run typecheck
 npm run build
 ```
 
-The development preview is at http://localhost:3000. `npm start` serves a completed production build. Google font files are fetched during build by `next/font`, then self-hosted by Next.js.
+The default development URL is http://localhost:3000. `npm start` serves a completed production build. Next.js fetches the Google fonts at build time and self-hosts them.
 
-## Stack and architecture
+## Architecture
 
-Next.js App Router, TypeScript, Tailwind CSS, Lucide React. GSAP (including its ScrollTrigger module) and Lenis are installed for later phases and are not initialized or shipped through page imports in Phase 1. No Three.js.
+- `src/app/` contains the layout, page composition, and CSS design system.
+- `src/data/portfolio.ts` holds editable identity, education, experience, skills, projects, and contact content.
+- `src/components/` contains the five sections and the client controls for navigation, email copy, the intro, and the portrait.
+- `src/lib/animations.ts` runs Lenis on the shared GSAP ticker and forwards scroll updates to ScrollTrigger. `src/lib/particles.ts` samples the portrait once and renders it on a single Canvas with typed arrays.
+- `.chrome-text`, `.glass`, `.display`, `.technical`, `.eyebrow`, `.pill`, and `.button` are shared styles.
 
-- `src/app/`: layout, metadata, page composition, global design tokens and responsive styles.
-- `src/data/portfolio.ts`: editable identity, education, experience, skills, research, projects, learning, and contact content.
-- `src/components/`: Navbar, Hero, About, Services, Projects, Play, Contact, and CopyEmail.
-- Only Navbar and CopyEmail are client components. Navigation uses native anchors, a mobile disclosure, Escape dismissal, and section observation. Clipboard feedback includes an accessible failure state.
-- `.chrome-text`, `.glass`, `.display`, `.technical`, `.eyebrow`, `.pill`, and `.button` form the shared visual system.
-- Six semantic sections: `home`, `about`, `services`, `projects`, `play`, `contact`.
+The intro runs on a normal page load at the top. Skip Intro and reduced-motion preferences show the final hero directly. Deep links go straight to their section. ScrollTrigger scatters and reforms the particles as the hero leaves and reenters the viewport. The canvas pauses when the hero or tab is hidden. Dispatch `portfolio:reform-particles` to request a reform from another component.
 
-## Asset handoff
+## Assets and remaining phases
 
-The full-size `data-portrait-slot` in Hero is reserved for the responsive portrait canvas. Its stacking order places the background behind the portrait, then PORTFOLIO, identity, and foreground elements. Supply Sakshi’s approved portrait in Phase 2. The source background must be suppressed and the person isolated before future particle sampling.
+Phase 2 uses the supplied `sakshi-portfolio-portrait.jpg`, `iris-liveness.jpg`, and `erp-deployment.png` from `public/images/`. The Bug Lifespan and Restaurant Reservation media slots and personal GitHub and LinkedIn URLs still await approved inputs.
 
-Project media paths are defined in portfolio data and documented in `public/images/projects/README.md`. Screenshots are intentionally not loaded until supplied. No stock photography or fabricated screenshots are used. Personal GitHub and LinkedIn URLs are still required; their controls are explicitly disabled. Only the supplied iris repository is linked.
-
-## Controlled phases
-
-1. **Foundation + Design System — implemented.** Static layout, responsive typography, placeholders, navigation, clipboard, accessibility and reduced-motion baseline.
-2. Preloader + Particle Portrait Hero.
-3. About + Stack + Scroll Animation (independent stack rows are prepared).
-4. Services + Projects Animation.
-5. Interactive Breakout Game (the arcade is currently only a static preview).
-6. Contact + Cursor + Final Polish.
-
-Advanced animation, portrait particles, the interactive game, GSAP/Lenis initialization, velocity distortion, and custom cursor are deliberately deferred. Future modules such as ParticleFace, Preloader, CustomCursor, animations, and particle helpers should be added when implemented; no empty scaffolding is required.
+Phase 3 will cover About, Stack, and section motion. Services and Projects choreography and final contact polish remain future work.

@@ -1,9 +1,8 @@
-# Project media slots
+# Project media
 
-Supply approved screenshots at these paths, then replace the placeholder in Projects.tsx with next/image (including useful alt text):
-- iris-liveness.webp
-- bug-lifespan.webp
-- restaurant-reservation.webp
-- erp-deployment.webp (only approved professional-experience media)
+The Iris Liveness and ERP Deployment frames use the supplied `public/images/iris-liveness.jpg` and `public/images/erp-deployment.png`.
 
-These files intentionally do not exist yet. No screenshot or achievement is implied by the static media placeholders.
+To fill the remaining two frames, supply approved images and set their paths and `mediaAlt` in `src/data/portfolio.ts`:
+
+- `bug-lifespan.webp`
+- `restaurant-reservation.webp`
