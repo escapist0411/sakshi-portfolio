@@ -21,9 +21,9 @@ The development server usually starts at `http://localhost:3000`. Run `npm start
 Next.js App Router, TypeScript, Tailwind CSS, GSAP and ScrollTrigger, Lenis, and HTML Canvas.
 
 - `src/app/` holds the page, metadata, monogram icon, and global styles. `src/data/portfolio.ts` is the source for Sakshi’s biography, skills, projects, experience, and contact details.
-- The skippable cinematic intro leads into a Canvas particle portrait. Face-weighted sampling preserves the portrait on mobile, and rendering pauses when the hero is offscreen. Lenis uses the shared GSAP ticker for smooth navigation, with scroll progress and active section tracking.
+- The skippable cinematic intro forms a Canvas particle portrait, then crossfades to Sakshi’s photo. The app stops rendering particles after the handoff. Lenis uses the shared GSAP ticker for smooth navigation, with scroll progress and active section tracking.
 - About and Services reveal as they enter the viewport. The four technology marquees can be paused by keyboard and pause offscreen. The four-project showcase pairs the supplied Iris and ERP visuals with CSS workflow diagrams for Bug Lifespan and Restaurant Reservation.
-- Contact includes an email link, copy feedback and fallback, and Back to Top. Magnetic movement is limited to the email CTA and Back to Top on desktop with a fine pointer. Reduced-motion preferences keep the portrait, marquees, section reveals, and parallax still.
+- Contact includes an email link, copy feedback and fallback, and Back to Top. Magnetic movement is limited to the email CTA and Back to Top on desktop with a fine pointer. Reduced-motion preferences show the photo immediately and disable marquee motion, section reveals, and parallax.
 
 ## Optional updates
 

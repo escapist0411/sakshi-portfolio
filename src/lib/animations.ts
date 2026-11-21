@@ -7,7 +7,7 @@ export const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 export const PHONE = "(max-width: 760px)";
 export const PORTRAIT_FORM = "portfolio:portrait-form";
 export const PORTRAIT_SETTLE = "portfolio:portrait-settle";
-export const PORTRAIT_REFORM = "portfolio:reform-particles";
+export const PORTRAIT_COMPLETE = "portfolio:portrait-complete";
 
 export function setupSmoothScroll() {
   const lenis = new Lenis({ autoRaf: false, lerp: 0.105 });

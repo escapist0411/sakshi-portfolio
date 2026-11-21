@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, PHONE, PORTRAIT_FORM, PORTRAIT_SETTLE, REDUCED_MOTION, ScrollTrigger, setupSmoothScroll } from "@/lib/animations";
+import { gsap, PHONE, PORTRAIT_COMPLETE, PORTRAIT_FORM, PORTRAIT_SETTLE, REDUCED_MOTION, ScrollTrigger, setupSmoothScroll } from "@/lib/animations";
 
 type Props = { firstName: string };
 
@@ -38,13 +38,13 @@ export default function Preloader({ firstName }: Props) {
       }
     }
 
-    function finish(settle = false) {
+    function finish() {
       const restoreFocus = document.activeElement === skipButton;
       root.dataset.intro = "complete";
       try {
         release();
       } finally {
-        if (settle) window.dispatchEvent(new Event(PORTRAIT_SETTLE));
+        window.dispatchEvent(new Event(PORTRAIT_COMPLETE));
         if (restoreFocus) title?.focus({ preventScroll: true });
       }
       if (smooth) ScrollTrigger.refresh();
@@ -56,13 +56,13 @@ export default function Preloader({ firstName }: Props) {
           smooth.destroy();
           smooth = undefined;
         }
-        finish(true);
+        finish();
       } else {
         try {
           gsap.registerPlugin(ScrollTrigger);
           smooth ??= setupSmoothScroll();
         } catch {
-          finish(true);
+          finish();
         }
       }
     }
@@ -70,6 +70,8 @@ export default function Preloader({ firstName }: Props) {
     function startIntro() {
       if (!overlay || !content || !hero || !title || root.dataset.intro === "complete") return;
       const portrait = hero.querySelector("[data-portrait-slot]");
+      const particles = portrait?.querySelector("canvas");
+      const photo = portrait?.querySelector(".portrait-photo");
       const navbar = content.querySelector(".site-header");
       const identity = hero.querySelector(".hero-identity");
       const details = hero.querySelectorAll("[data-intro-detail]");
@@ -77,8 +79,8 @@ export default function Preloader({ firstName }: Props) {
       const backdrop = overlay.querySelector(".intro-backdrop");
       const name = overlay.querySelector(".intro-name");
       const letters = overlay.querySelectorAll(".intro-letter");
-      if (window.scrollY > 4 || (location.hash && location.hash !== "#home") || !portrait || !navbar || !identity || !glow || !backdrop || !name) {
-        finish(true);
+      if (window.scrollY > 4 || (location.hash && location.hash !== "#home") || !portrait || !particles || !photo || !navbar || !identity || !glow || !backdrop || !name) {
+        finish();
         return;
       }
 
@@ -86,12 +88,12 @@ export default function Preloader({ firstName }: Props) {
       running = true;
       content.inert = true;
       // This timer is independent of GSAP, so an interrupted timeline cannot trap scroll.
-      watchdog = window.setTimeout(() => finish(true), mobile ? 5400 : 7100);
+      watchdog = window.setTimeout(finish, mobile ? 5600 : 7200);
       try {
         smooth?.stop();
         intro = gsap.context(() => {});
         intro.add(() => {
-          gsap.timeline({ onComplete: () => finish() })
+          gsap.timeline({ onComplete: finish })
             .set([portrait, identity, navbar, ...details], { opacity: 0 }, 0)
             .set(title, { clipPath: "inset(-12% 100% -12% -4%)", filter: "blur(8px)", y: 16, opacity: 0 }, 0)
             .set(letters, {
@@ -111,30 +113,32 @@ export default function Preloader({ firstName }: Props) {
             .to(portrait, { opacity: 1, duration: 0.78 }, 3.16)
             // Reveal the actual hero title, so the transition has no duplicate title to align.
             .to(title, { clipPath: "inset(-12% -4% -12% -4%)", filter: "blur(0px)", y: 0, opacity: 1, duration: 1.52, ease: "power3.out" }, 3.26)
-            .fromTo(identity, { y: 15 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 4.76)
-            .to(details, { opacity: 1, duration: 0.58 }, 5.08)
-            .fromTo(navbar, { y: -9 }, { y: 0, opacity: 1, duration: 0.54, ease: "power2.out" }, 5.51)
+            .call(() => window.dispatchEvent(new Event(PORTRAIT_SETTLE)), [], 4.95)
+            .to(particles, { opacity: 0, duration: 0.8, ease: "sine.inOut" }, 5.15)
+            .to(photo, { opacity: 1, duration: 0.8, ease: "sine.inOut" }, 5.15)
+            .fromTo(identity, { y: 12 }, { y: 0, opacity: 1, duration: 0.48, ease: "power3.out" }, 5.69)
+            .to(details, { opacity: 1, duration: 0.37 }, 5.8)
+            .fromTo(navbar, { y: -9 }, { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" }, 5.95)
             .timeScale(mobile ? 1.3 : 1);
         });
       } catch {
-        finish(true);
+        finish();
       }
     }
 
-    const skipIntro = () => finish(true);
     const restorePage = (event: PageTransitionEvent) => {
-      if (event.persisted && running) finish(true);
+      if (event.persisted && running) finish();
     };
     syncMotion();
     const frame = window.requestAnimationFrame(startIntro);
     reduced.addEventListener("change", syncMotion);
-    skipButton.addEventListener("click", skipIntro);
+    skipButton.addEventListener("click", finish);
     window.addEventListener("pageshow", restorePage);
 
     return () => {
       window.cancelAnimationFrame(frame);
       reduced.removeEventListener("change", syncMotion);
-      skipButton.removeEventListener("click", skipIntro);
+      skipButton.removeEventListener("click", finish);
       window.removeEventListener("pageshow", restorePage);
       if (running) delete root.dataset.intro;
       try {
